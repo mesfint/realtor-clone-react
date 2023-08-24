@@ -2,32 +2,73 @@ import React, { useState } from 'react'
 import { AiFillEyeInvisible,AiFillEye} from "react-icons/ai"
 import { Link } from 'react-router-dom';
 import OAuth from '../components/OAuth';
+import { db } from '../firebase';
+import { auth } from '../firebase';
+import {  createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import {useNavigate} from "react-router-dom"
+import { ToastContainer, toast } from 'react-toastify';
 
-const SignUp = () => {
-  const [showPassword, setShowPassword] = useState(false)
-  const[formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: ""
-  
-  });
-  const {name,email, password} = formData
 
-  const onShowPassword=(e)=>{
-    e.preventDefault();
+
+  const  SignUp =  () => {
+    const [showPassword, setShowPassword] = useState(false)
+    const[formData, setFormData] = useState({
+      name: "",
+      email: "",
+      password: ""
     
-    setShowPassword(prevState=> !prevState)
-  }
+    });
+    const {name,email, password} = formData
 
-  const  onChange=(e)=>{
-    //we target the id of input since its unique
-    setFormData((prevState)=>({
-      ...prevState, [e.target.id] : e.target.value
-
-
-    }));
-
-  }
+    const navigate = useNavigate();
+    
+    const onShowPassword=(e)=>{
+      e.preventDefault();
+      
+      setShowPassword(prevState=> !prevState)
+    }
+  
+    const  onChange=(e)=>{
+      //we target the id of input since its unique
+      setFormData((prevState)=>({
+        ...prevState, [e.target.id] : e.target.value
+  
+      }));
+  
+    }
+    const onSubmit= async (e)=>{ 
+    e.preventDefault();
+  
+    try {
+      
+      const  userCredential = await createUserWithEmailAndPassword(auth,email,password);
+      const user = userCredential.user;
+          //we don't want to store password in the database,
+          //Therefore we copy the formData and remove the password out of it.
+          const formDataCopy = {...formData}
+          delete formDataCopy.password;
+          formDataCopy.timestamp = serverTimestamp();
+          //store the loggedIn user data in firestore db
+          //users is a collection, also give same user id for the collection
+          await setDoc(doc(db,"users",user.uid), formDataCopy)
+          toast.success("Successfully ")
+          navigate("/")
+  
+          //to display the username
+         await updateProfile(auth.currentUser,{
+            displayName: name
+          })
+        
+        
+      
+    } catch (error) {
+      toast.error("something wrong with the registration!!")
+      
+    }
+    
+        
+    }
   return (
     <section>
       <h1 className='text-3xl text-center mt-6 font-bold'>
@@ -39,7 +80,7 @@ const SignUp = () => {
         </div>
         <div className='w-full md:w-[67%] lg:w-[40%] lg:ml-20'>
           {/* for mobile the form will be full */}
-          <form className='flex  flex-col ' >
+          <form onSubmit={onSubmit}>
             <input className='w-full px-4 py-2 mb-5 text-xl text-gray-700 bg-white border-gray-300 rounded transition  ease-in-out ' type="text"
              id='name' 
              value={name}
@@ -68,12 +109,12 @@ const SignUp = () => {
                 <p className="mb-6">Have account?
                   <Link to="/sign-in" className='text-red-600 hover:text-red-700 transition duration-200 ease-in-out mx-1' >Sign in</Link>
                 </p>
-                <p>Forgot Password?
+                <p>
                   <Link className='text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out mx-1'to="/forgot-password">Forgot Password</Link>
                 </p>
               </div>
-          </form>
           <button className='w-full bg-blue-600 text-white px-7 py-3 text-sm font-medium uppercase rounded shadow-md hover:bg-blue-700 transition duration-150 ease-in-out hover:shadow-lg active:bg-blue-800' type='submit'>Sign up</button>
+          </form>
          <div className='my-4 flex items-center
          before:border-t  before:flex-1 
          before:border-gray-300

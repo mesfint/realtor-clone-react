@@ -39,7 +39,7 @@ const ForgotPassword = () => {
                 </p>
               </div>
           </form>
-          <button className='w-full bg-blue-600 text-white px-7 py-3 text-sm font-medium uppercase rounded shadow-md hover:bg-blue-700 transition duration-150 ease-in-out hover:shadow-lg active:bg-blue-800' type='submit'>SEND RESET PASSWORD</button>
+          <button className='w-full bg-blue-600 text-white px-7 py-3 text-sm font-medium uppercase rounded shadow-md hover:bg-blue-700 transition duration-150 ease-in-out hover:shadow-lg active:bg-blue-800' type='submit'>SEND RESET EMAIL</button>
          <div className='my-4 flex items-center
          before:border-t  before:flex-1 
          before:border-gray-300
